@@ -1,0 +1,127 @@
+
+<html>
+<head>
+<title>Read Maildir emails (Spamassassin Inbox)</title>
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+	<style>
+		ppp {
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: ellipsis;
+		    max-width: 40ch;
+		}
+	</style>
+</head>
+<body>
+
+<script>
+(function () {
+	var html_element = function(el,attr){
+		try{
+			el = document.createElement(el);        
+			if(attr && attr.id){
+				el.id = attr.id;
+			}
+			if(attr && attr.class){
+				el.className = attr.class;
+			}
+			if(attr && attr.style) {
+				el.setAttribute("style", attr.style); 
+			}
+		}catch(e){
+			console.log(e);
+		}
+		finally{
+			return el;
+		}
+	}
+	
+	var load_json = function(callback) {   
+	    var xobj = new XMLHttpRequest();
+	    xobj.overrideMimeType("application/json");
+	    xobj.open('GET', 'mailbox.json', true);
+	    xobj.onreadystatechange = function () {
+	          if (xobj.readyState == 4 && xobj.status == "200") {
+	            callback(xobj.responseText);
+	          }
+	    };
+	    xobj.send(null);  
+	 }
+
+	function generate_table(data){
+		var table = html_element("table",attr={class:"w3-table-all w3-tiny"})
+		var col = ["Subject","From","X-Spam-Score","Date","X-Spam-Status","X-Spam-Report","All"]
+		/*var col = []
+		
+		for (var i = 0; i < data.length; i++) {
+			for (var key in data[i]) {
+				if (col.indexOf(key) === -1) {
+					col.push(key);
+				}
+			}
+		}*/
+		var thead = html_element("thead")
+		var hrow = html_element("tr")
+		
+		for (var i = 0; i < col.length; i++) {
+			var th = html_element("th",attr={class:"w3-teal"})
+			th.innerHTML = col[i]
+			hrow.appendChild(th)
+		}
+
+		thead.appendChild(hrow)
+		table.appendChild(thead)
+		
+		var tbody = html_element("tbody")
+		
+		for (var i=0; i<data.length; i++){
+			var brow = html_element("tr")
+			for(var j=0; j<col.length; j++){
+				var td = html_element("td")
+
+
+				if(typeof data[i][col[j]] == "undefined"){
+					data[i][col[j]] = "" 
+				}
+
+				tddat = data[i][col[j]]
+				clean_td = tddat.replace(/</g,"&lt;")
+				clean_td = clean_td.replace(/>/g,"&gt;")
+				clean_td = clean_td.replace(/(?:\r\n|\r|\n)/g, '<br>');
+
+				if(col[j] == "All"){
+					tddata = "<a href='#' onclick=alert('todo-data[i]')>view</a>"
+				}/*else if(col[j] == "content"){
+					content = data[i][col[j]]
+					tddata = content.replace(/(?:\r\n|\r|\n)/g, '<br>');
+				}*/
+				else{
+					tddata = "<p>"+clean_td+"</p>"
+				}
+				
+				td.innerHTML = tddata
+				
+				brow.appendChild(td)
+			}
+			tbody.appendChild(brow)
+		}
+		table.appendChild(tbody)
+		var div = html_element("div", attr={class:"w3-container w3-responsive"})
+		div.appendChild(table)
+		document.body.appendChild(div); 	
+	}
+
+	function init() {
+	 load_json(function(response) {
+	    var data = JSON.parse(response);
+	    generate_table(data)
+	 });
+	} 
+
+	init()
+
+}());
+
+</script>
+</body>
+</html>
